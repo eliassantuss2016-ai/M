@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Macros RP</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f9;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      color: #333;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 5px;
+      margin-top: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      height: 50px;
+      resize: vertical;
+      background-color: #e9e9e9;
+      cursor: pointer;
+    }
+    .macro-group {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      background-color: #f9f9f9;
+    }
+    .macro-group h3 {
+      margin-top: 0;
+      color: #555;
+    }
+    .hidden {
+      display: none;
+    }
+    .copy-btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-left: 10px;
+      float: right;
+      font-size: 0.8em;
+    }
+    .copy-btn:hover {
+      background-color: #45a049;
+    }
+    .copied {
+      color: green;
+      font-size: 0.8em;
+      margin-left: 5px;
+    }
+    .macro-output-container {
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Gerador de Macros RP</h1>
+
+  <h2>Dados Pessoais e Setoriais</h2>
+
+  <label for="patente">Patente:</label>
+  <select id="patente" onchange="toggleInput('patente','outraPatente')">
+    <option value="REC">REC</option>
+    <option value="SD">SD</option>
+    <option value="SGT">SGT</option>
+    <option value="1°SGT">1°SGT</option>
+    <option value="SGT-MOR">SGT-MOR</option>
+    <option value="TEN">TEN</option>
+    <option value="CAP">CAP</option>
+    <option value="MAJ">MAJ</option>
+    <option value="CEL">CEL</option>
+    <option value="MAJ-GEN">MAJ-GEN</option>
+    <option value="TEN-GEN">TEN-GEN</option>
+    <option value="CEL-GEN">CEL-GEN</option>
+    <option value="CEL-GEN-ADJ">CEL-GEN-ADJ</option>
+    <option value="FED">FED</option>
+    <option value="OUTRA">Outra Patente (Especificar)</option>
+  </select>
+  <input type="text" id="outraPatente" class="hidden" placeholder="Digite a Patente personalizada" oninput="generateMacros()">
+
+  <label for="nomeRP">Nome no RP:</label>
+  <input type="text" id="nomeRP" placeholder="Seu Nome Aqui" oninput="generateMacros()">
+
+  <label for="setor">Setor:</label>
+  <select id="setor" onchange="toggleSectorOptions(); generateMacros();">
+    <option value="SUL">SUL</option>
+    <option value="TERRA">TERRA</option>
+    <option value="PAPA">PAPA</option>
+    <option value="CENTRO">CENTRO</option>
+    <option value="EPS">EPS</option>
+    <option value="LESTE">LESTE</option>
+    <option value="NORTE">NORTE</option>
+    <option value="CERBERUS">CERBERUS</option>
+    <option value="1°REG">1°REG</option>
+    <option value="2°REG">2°REG</option>
+    <option value="3°REG">3°REG</option>
+    <option value="DELEGADO">DELEGADO</option>
+    <option value="OUTRO">Outro Setor (Especificar)</option>
+  </select>
+  <input type="text" id="outroSetor" class="hidden" placeholder="Digite o Setor personalizado" oninput="generateMacros()">
+
+  <div id="opcoesEPS" class="hidden">
+    <label for="tipoEPS">Função EPS (Substitui Setor):</label>
+    <select id="tipoEPS" onchange="generateMacros()">
+      <option value="EPS">EFETIVO</option>
+      <option value="AUX-EPS">AUXILIAR</option>
+      <option value="LIDER/INST-EPS">LÍDER DE INSTRUÇÃO</option>
+    </select>
+  </div>
+
+  <label for="funcaoLivre">Função Adicional/Setor (Livre):</label>
+  <input type="text" id="funcaoLivre" placeholder="Opcional. Ex: ADM/SUP-AERO" oninput="generateMacros()">
+
+  <label for="carroCor">Modelo de Carro-Cor (ex: Honda Civic-Azul):</label>
+  <input type="text" id="carroCor" placeholder="Modelo e Cor do Carro" oninput="generateMacros()">
+
+  <h2>Macros Geradas</h2>
+  <div id="macrosGeradas"><p>Preencha os campos acima para gerar as macros.</p></div>
+</div>
+
+<script>
+function toggleInput(selectId, inputId) {
+  const select = document.getElementById(selectId);
+  const input = document.getElementById(inputId);
+  input.classList.toggle('hidden', select.value !== 'OUTRA');
+  generateMacros();
+}
+
+function toggleSectorOptions() {
+  const setorSelect = document.getElementById('setor');
+  const outroSetorInput = document.getElementById('outroSetor');
+  const opcoesEPSDiv = document.getElementById('opcoesEPS');
+  outroSetorInput.classList.toggle('hidden', setorSelect.value !== 'OUTRO');
+  opcoesEPSDiv.classList.toggle('hidden', setorSelect.value !== 'EPS');
+}
+
+function copyText(text, btn) {
+  const temp = document.createElement('textarea');
+  temp.value = text;
+  document.body.appendChild(temp);
+  temp.select();
+  try {
+    document.execCommand('copy');
+    showCopied(btn);
+  } catch (err) {
+    alert('Não foi possível copiar automaticamente. Selecione e copie o texto.');
+  }
+  document.body.removeChild(temp);
+}
+
+function showCopied(btn) {
+  let span = btn.nextElementSibling;
+  if (!span || !span.classList.contains('copied')) {
+    span = document.createElement('span');
+    span.className = 'copied';
+    btn.insertAdjacentElement('afterend', span);
+  }
+  span.textContent = '✅ Copiado!';
+  setTimeout(()=>{ span.textContent=''; },1500);
+}
+
+function generateMacros() {
+  let patente = document.getElementById('patente').value;
+  if (patente === 'OUTRA') {
+    patente = document.getElementById('outraPatente').value.toUpperCase().trim() || 'REC';
+  }
+  const nomeRP = document.getElementById('nomeRP').value.trim() || 'SEU NOME';
+  let setorBase = document.getElementById('setor').value;
+  if (setorBase === 'OUTRO') {
+    setorBase = document.getElementById('outroSetor').value.toUpperCase().trim() || 'SETOR';
+  }
+  let siglaBase = (setorBase === 'EPS') ? document.getElementById('tipoEPS').value : setorBase;
+  const funcaoLivre = document.getElementById('funcaoLivre').value.toUpperCase().trim();
+  let siglaSetorFinal = funcaoLivre ? (funcaoLivre.includes('-') ? funcaoLivre : `${funcaoLivre}-${siglaBase}`) : siglaBase;
+  const siglaMacro = siglaSetorFinal ? `[${siglaSetorFinal}]` : '';
+  const carroMacro = document.getElementById('carroCor').value.trim() || 'MODELO DE CARRO-COR';
+
+  const macros = [
+    {
+      titulo:"Apresentação e Permissão",
+      macros:[
+        `Continência Sr(a) [${patente}] ${nomeRP}${siglaMacro} se apresentando!`,
+        `Tenho permissão para falar senhor(a)?`,
+        `Tenho permissão para me retirar senhor(a)?`
+      ]
+    },
+    {
+      titulo:"Flobby (Base)",
+      macros:[
+        `/flobby [${patente}] ${nomeRP}${siglaMacro}, pedindo permissão e acompanhamento até a cidade. TKS pela atenção, QRV.`,
+        `/flobby Senhores(as) [${patente}] ${nomeRP}${siglaMacro} indo de QTX, bom trabalho a todos!`,
+        `/flobby [${patente}] ${nomeRP}${siglaMacro} entrando na base com veículo particular [${carroMacro}]`
+      ]
+    },
+    {
+      titulo:"⚠️ PORTARIA SUL E NORTE: ⚠️",
+      macros:[
+        `🪖 CIVIL A PÉ:
+Atenção área militar se afaste!...`,
+        `🪖 CIVIL COM VEÍCULO:
+Retire o veículo da frente da base...`,
+        `🪖 INVASOR:
+Área restrita, será abatido após o terceiro aviso!`
+      ]
+    },
+    {
+      titulo:"⚠️ MACRO DE RONDA: ⚠️",
+      macros:[
+        `* Exército em ronda de rotina. Cidadãos com armas de grosso calibre serão abatidos!`,
+        `* Sr(a) cidadão, afaste-se da VTR ou será abatido.`
+      ]
+    }
+  ];
+
+  const container = document.getElementById('macrosGeradas');
+  container.innerHTML='';
+  macros.forEach(group=>{
+    const div=document.createElement('div');
+    div.classList.add('macro-group');
+    const h3=document.createElement('h3');
+    h3.textContent=group.titulo;
+    div.appendChild(h3);
+    group.macros.forEach(macro=>{
+      const out=document.createElement('div');
+      out.classList.add('macro-output-container');
+      const ta=document.createElement('textarea');
+      ta.value=macro;
+      ta.readOnly=true;
+      const btn=document.createElement('button');
+      btn.className='copy-btn';
+      btn.textContent='Copiar';
+      btn.onclick=(e)=>{ e.preventDefault(); copyText(macro, btn); };
+      out.appendChild(btn);
+      out.appendChild(ta);
+      div.appendChild(out);
+    });
+    container.appendChild(div);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', generateMacros);
+</script>
+</body>
+</html>
